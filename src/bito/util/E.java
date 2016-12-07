@@ -40,11 +40,11 @@ import bito.util.logger.Log;
 
 public class E
 {
-	private static E o = (E)b.i.t.o();
+	private E o = (E)b.i.t.o();
 
 	public static E V()
 	{
-		return o;
+		return new E();
 	}
 
 	public void copyFile(File source, File target) throws IOException

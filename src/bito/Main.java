@@ -41,7 +41,7 @@ public class Main
 			{
 				if (args.length == 1)
 				{
-					System.out.println("d.E tail <file>");
+					System.out.println("bito.Main tail <file>");
 				}
 				tailingfile(args[1]);
 			}
@@ -79,18 +79,20 @@ public class Main
 			}
 			else if (args.length == 0)
 			{
-				new EVF(new String[]{"!d._.RegxMatch"}).run();
+				new EVF(new String[]{"!bito.util.RegxMatch"}).run();
 			}
 			else
 			{
-				System.out.println("d.E ?");
-				System.out.println("d.E !<JPanel Class Name>");
-				System.out.println("d.E encrypt <srcfile> <desfile> <key>");
-				System.out.println("d.E decrypt <srcfile> <desfile> <key>");
-				System.out.println("d.E tail <tailfile>");
-				System.out.println("[-Dusername=...] [-Dpassword=...] [-Dmode=debug] d.E wget <http[s]url> [postdata]");
-				System.out.println("d.E publish <v> !");
-				System.out.println("-Dmaxfilesize=2048000 -Dmaxbackindex=-1 d.E output <redirect stdout to filename>");
+				System.out.println("bito.Main ?");
+				System.out.println("bito.Main !<JPanel Class Name>");
+				System.out.println("bito.Main encrypt <srcfile> <desfile> <key>");
+				System.out.println("bito.Main decrypt <srcfile> <desfile> <key>");
+				System.out.println("bito.Main tail <tailfile>");
+				System.out
+					.println("[-Dusername=...] [-Dpassword=...] [-Dmode=debug] bito.Main wget <http[s]url> [postdata]");
+				System.out.println("[-Dusermail=...] [-Dpassword=...] bito.Main register");
+				System.out
+					.println("-Dmaxfilesize=2048000 -Dmaxbackindex=-1 bito.Main output <redirect stdout to filename>");
 				System.out.println();
 				System.out.println(Arrays.toString(args));
 			}

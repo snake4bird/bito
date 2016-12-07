@@ -29,7 +29,7 @@ public class EVF implements Runnable
 
 	protected JPanel newMainPanel() throws Exception
 	{
-		String clsname = "d._.cellcomm.vf.Okm";
+		String clsname = JPanel.class.getName();
 		if (args.length > 0 && args[0].startsWith("!") && args[0].length() > 1)
 		{
 			clsname = args[0].substring(1);
