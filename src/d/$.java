@@ -19,7 +19,6 @@ import d.g.gi;
 
 public abstract class $
 {
-	public static final Object DesignMode = $.class;
 	private static final $ V;
 	private static final ClassLoader evcl;
 	private static final Method evcla;
@@ -187,9 +186,12 @@ public abstract class $
 	{
 		try
 		{
-			if (DesignMode != null)
+			try
 			{
 				return (ClassLoader)Class.forName("$.$").newInstance();
+			}
+			catch(Throwable throwable)
+			{
 			}
 			ClassLoader cl = d.$.class.getClassLoader();
 			if (cl == null)
