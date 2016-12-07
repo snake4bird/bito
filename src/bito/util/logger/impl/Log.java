@@ -14,7 +14,7 @@ import java.util.Properties;
 
 import bito.util.cfg.SystemConfig;
 
-import d.FileAppender;
+import bito.util.FileAppender;
 
 public class Log implements bito.util.logger.lvl.Log
 {
@@ -85,10 +85,14 @@ public class Log implements bito.util.logger.lvl.Log
 		else
 		{
 			logfile = SystemConfig.get((id.length() == 0?"":(id + ".")) + "log.file", //有明确定义
-				(id.indexOf("/") >= 0)?id //id中用“/”指定了路径，[id]
-						:("logs/" + ((id.indexOf(".") > 0)?id //id中指定了后缀文件名，logs/[id]
-								:(((id.length() > 0)?(id + "_") //id不为空，logs/[id]_log.txt
-										:("")) + "log.txt")))); //id为空，固定输出文件 logs/log.txt
+				(id.indexOf("/") >= 0)
+					?id //id中用“/”指定了路径，[id]
+						:("logs/" + ((id.indexOf(".") > 0)
+							?id //id中指定了后缀文件名，logs/[id]
+								:(((id.length() > 0)
+									?(id + "_") //id不为空，logs/[id]_log.txt
+										:(""))
+									+ "log.txt")))); //id为空，固定输出文件 logs/log.txt
 		}
 		Properties config = new Properties();
 		config.setProperty("log.file", logfile);
@@ -178,8 +182,8 @@ public class Log implements bito.util.logger.lvl.Log
 			boolean log_init_recurve = false;
 			for(int i = 1; !log_init_recurve && i < st.length; i++)
 			{
-				log_init_recurve = (st[i].getMethodName().equals("<clinit>") && st[i].getClassName()
-					.equals(SystemConfig.class.getName()));
+				log_init_recurve = (st[i].getMethodName().equals("<clinit>")
+					&& st[i].getClassName().equals(SystemConfig.class.getName()));
 			}
 			initialized = !log_init_recurve;
 			if (initialized)
@@ -236,7 +240,7 @@ public class Log implements bito.util.logger.lvl.Log
 			FileAppender fa = (FileAppender)facache.get(logfilename);
 			if (fa == null)
 			{
-				fa = d.E.V().newFileAppender(logfilename, maxfilesize, maxbackindex);
+				fa = new FileAppender(logfilename, maxfilesize, maxbackindex);
 				facache.put(logfilename, fa);
 			}
 			return fa;

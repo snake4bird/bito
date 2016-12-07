@@ -21,8 +21,7 @@ import java.util.SortedMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import d._.EscapeSequence;
-
+import bito.util.EscapeSequence;
 import bito.util.logger.Log;
 
 /**
@@ -97,10 +96,10 @@ public class ConfigFileParser
 		ArrayList al = new ArrayList();
 		FileInputStream fis = new FileInputStream(resource_mappingfile);
 		String s;
-		byte[] bs = d.E.V().readBytes(fis);
+		byte[] bs = bito.util.E.V().readBytes(fis);
 		try
 		{
-			String csn = d.E.V().checkTextFileCharset(bs);
+			String csn = bito.util.E.V().checkTextFileCharset(bs);
 			if ("UTF-8".equals(csn))
 			{
 				s = new String(bs, 3, bs.length - 3, csn);
@@ -148,7 +147,7 @@ public class ConfigFileParser
 	private String loadMapping(BufferedReader br, ArrayList hmlist) throws IOException
 	{
 		HashMap pkset = new HashMap();
-		SortedMap hm = d.E.V().newMapSortedByAddTime();
+		SortedMap hm = bito.util.E.V().newMapSortedByAddTime();
 		String[] mapfile_format_warning = new String[]{""};
 		String clsname = null;
 		String sub_source = null;
@@ -173,17 +172,17 @@ public class ConfigFileParser
 				String[] item = line.split("=", 2);
 				if (item.length > 0)
 				{
-					String key = d.E.V().getEscapeSequence().decode(item[0].trim(), true);
+					String key = EscapeSequence.decode(item[0].trim(), true);
 					String val = "";
 					if (item.length == 2)
 					{
-						val = d.E.V().getEscapeSequence().decode(item[1].trim(), true);
+						val = EscapeSequence.decode(item[1].trim(), true);
 					}
 					if (hm.containsKey(key))
 					{
 						checkPrimaryKeysRedefined(pkset, hm, mapfile_format_warning);
 						hmlist.add(hm);
-						hm = d.E.V().newMapSortedByAddTime();
+						hm = bito.util.E.V().newMapSortedByAddTime();
 					}
 					hm.put(key, replaceVariable(val, hm, hmlist));
 				}

@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import d.SQLRunner;
 import bito.util.cfg.SystemConfig;
 import bito.util.dba.DBTool;
 import bito.util.logger.Log;
@@ -54,7 +53,7 @@ public class RunSQL
 	{
 		if (sqlrunner == null)
 		{
-			sqlrunner = d.E.V().newSQLRunner(procname);
+			sqlrunner = new SQLRunner(procname);
 			sqlrunner.setVariable("procman", ptmanager);
 			sqlrunner.setVariable("procname", procname);
 		}

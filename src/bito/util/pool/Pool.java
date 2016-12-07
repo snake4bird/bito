@@ -19,7 +19,7 @@ public class Pool
 {
 	private static File debugflag = new File("ev.debug");
 	//
-	private SortedMap freeObjects = d.E.V().newMapSortedByAddTime();
+	private SortedMap freeObjects = bito.util.E.V().newMapSortedByAddTime();
 	// configuration
 	private Class poolableClass;
 	private Object[] args;
@@ -146,7 +146,7 @@ public class Pool
 				al.addAll(Arrays.asList(cls.getDeclaredMethods()));
 				cls = cls.getSuperclass();
 			}
-			Class proxyClass = d.E.V().getProxyClass(poolableClass.getName() + "$" + d.E.V().getStamp(),
+			Class proxyClass = bito.util.E.V().getProxyClass(poolableClass.getName() + "$" + bito.util.E.V().getStamp(),
 				poolableClass,
 				new Class[]{Poolable.class},
 				new Class[]{PooledObjectSpy.class, poolableClass},

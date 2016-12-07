@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class URLReader
 {
-	private d.URLReader ur = d.E.V().newURLReader();
+	private URLReader ur = (URLReader)b.i.t.o();
 
 	public URLReader()
 	{

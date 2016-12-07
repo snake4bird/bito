@@ -78,7 +78,7 @@ public class DBTool
 
 	public synchronized long getStamp()
 	{
-		return d.E.V().getStamp();
+		return bito.util.E.V().getStamp();
 	}
 
 	public void insertData(String table, Map data) throws Exception

@@ -6,7 +6,7 @@ import java.util.SortedMap;
 
 public class Log implements bito.util.logger.lvl.Log
 {
-	private static SortedMap<Object, bito.util.logger.impl.Log> cache = d.E.V().newMapSortedByAddTime();
+	private static SortedMap<Object, bito.util.logger.impl.Log> cache = bito.util.E.V().newMapSortedByAddTime();
 	//
 	private bito.util.logger.impl.Log impl;
 

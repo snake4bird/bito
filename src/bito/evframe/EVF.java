@@ -16,8 +16,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import d.E;
-
 public class EVF implements Runnable
 {
 	private String[] args;
@@ -36,7 +34,7 @@ public class EVF implements Runnable
 		{
 			clsname = args[0].substring(1);
 		}
-		Class cls = Class.forName(clsname, true, E.V().getClass().getClassLoader());
+		Class cls = Class.forName(clsname, true, bito.util.E.V().getClass().getClassLoader());
 		return (JPanel)cls.newInstance();
 	}
 

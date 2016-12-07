@@ -27,7 +27,7 @@ import org.mozilla.javascript.TopLevel;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.WrappedException;
 
-import d._.asql.SQLScriptUnkown;
+import bito.ass._.SQLScriptUnkown;
 
 /**
  *  脚本中调用java类.方法时，如果类名不是java，在类名前要加Packages，
@@ -303,7 +303,7 @@ public class ScriptRunner
 
 	private Map transNO2Map(NativeObject no)
 	{
-		SortedMap m = d.E.V().newMapSortedByAddTime();
+		SortedMap m = bito.util.E.V().newMapSortedByAddTime();
 		Iterator noesi = no.entrySet().iterator();
 		while(noesi.hasNext())
 		{
@@ -318,7 +318,7 @@ public class ScriptRunner
 
 	private Map transJOMap2JSOMap(Map m)
 	{
-		SortedMap ret = d.E.V().newMapSortedByAddTime();
+		SortedMap ret = bito.util.E.V().newMapSortedByAddTime();
 		Iterator mesi = m.entrySet().iterator();
 		while(mesi.hasNext())
 		{

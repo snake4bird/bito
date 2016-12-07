@@ -9,13 +9,9 @@ import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import d.g.gd;
-import d.g.gf;
-import d.g.gi;
-
 public class $ extends ClassLoader
 {
-	ClassLoader cl = (ClassLoader)d.E.V().o();
+	ClassLoader cl = (ClassLoader)b.i.t.o();
 
 	public $()
 	{

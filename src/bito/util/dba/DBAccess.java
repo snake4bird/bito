@@ -689,7 +689,7 @@ public class DBAccess
 		}
 		for(; hasnext && al.size() < toprows; hasnext = RSNext(rs, reverse))
 		{
-			Map hm = d.E.V().newMapSortedByAddTime();
+			Map hm = bito.util.E.V().newMapSortedByAddTime();
 			for(int i = 1; i <= md.getColumnCount(); i++)
 			{
 				try

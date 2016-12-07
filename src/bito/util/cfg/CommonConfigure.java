@@ -14,7 +14,7 @@ public class CommonConfigure extends ConfigFileParser
 
 	public Map getConfigMap()
 	{
-		Map ret = d.E.V().newMapSortedByAddTime();
+		Map ret = bito.util.E.V().newMapSortedByAddTime();
 		Map[] cm = getConfigure();
 		if (cm != null && cm.length > 0)
 		{

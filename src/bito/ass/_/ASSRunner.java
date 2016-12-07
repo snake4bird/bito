@@ -43,12 +43,12 @@ public class ASSRunner extends bito.ass.ASSRunner implements ProcThreadManager, 
 		{
 			if (initscript_filename != null && initscript_filename.length() > 0)
 			{
-				String initscript = d.E.V().readfile(new File(initscript_filename));
+				String initscript = bito.util.E.V().readfile(new File(initscript_filename));
 				setCommonIncludeScript(initscript);
 			}
 			if (systeminitscript_filename != null && systeminitscript_filename.length() > 0)
 			{
-				String initscript = d.E.V().readfile(new File(systeminitscript_filename));
+				String initscript = bito.util.E.V().readfile(new File(systeminitscript_filename));
 				if (initscript != null && !initscript.equals(systeminitscript))
 				{
 					systeminitscript = initscript;
