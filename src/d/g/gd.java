@@ -482,164 +482,171 @@ public class gd
 		if (inputstream == null)
 			throw new NullPointerException("Input stream is null!");
 		d d1 = new d(inputstream, 8192);
-		byte abyte0[] = new byte[3];
-		byte abyte1[] = new byte[3];
-		byte abyte2[] = new byte[7];
-		d1.read(abyte0);
-		String s = new String(abyte0);
-		if (!s.equals("GIF"))
-			throw new IOException("The specified input stream is not recognised as a GIF image");
-		d1.read(abyte1);
-		gi gifimage = new gi();
-		gifimage.s = new String(abyte1);
-		d1.read(abyte2);
-		gifimage.width = abyte2[0] & 0xff | (abyte2[1] & 0xff) << 8;
-		gifimage.height = abyte2[2] & 0xff | (abyte2[3] & 0xff) << 8;
-		byte byte0 = abyte2[4];
-		gifimage.k = abyte2[5] & 0xff;
-		gifimage.l = abyte2[6];
-		gifimage.p = (byte0 >> 4 & 7) + 1;
-		gifimage.d = (byte0 & 7) + 1;
-		gifimage.e = 1 << gifimage.d;
-		if ((byte0 & 0x80) != 0)
+		try
 		{
-			gifimage.c = true;
-			gifimage.j = (byte0 & 8) != 0;
-			byte abyte3[] = new byte[3 * gifimage.e];
-			if (d1.read(abyte3) != abyte3.length)
-				throw new IOException("Invalid input stream: more data is expected!");
-			gifimage.f = new byte[gifimage.e];
-			gifimage.h = new byte[gifimage.e];
-			gifimage.g = new byte[gifimage.e];
-			for(int i = 0; i < gifimage.e; i++)
-			{
-				gifimage.f[i] = abyte3[3 * i];
-				gifimage.g[i] = abyte3[3 * i + 1];
-				gifimage.h[i] = abyte3[3 * i + 2];
-			}
-		}
-		else
-		{
-			gifimage.c = false;
-			gifimage.j = false;
-			gifimage.k = -1;
-			gifimage.d = gifimage.p;
+			byte abyte0[] = new byte[3];
+			byte abyte1[] = new byte[3];
+			byte abyte2[] = new byte[7];
+			d1.read(abyte0);
+			String s = new String(abyte0);
+			if (!s.equals("GIF"))
+				throw new IOException("The specified input stream is not recognised as a GIF image");
+			d1.read(abyte1);
+			gi gifimage = new gi();
+			gifimage.s = new String(abyte1);
+			d1.read(abyte2);
+			gifimage.width = abyte2[0] & 0xff | (abyte2[1] & 0xff) << 8;
+			gifimage.height = abyte2[2] & 0xff | (abyte2[3] & 0xff) << 8;
+			byte byte0 = abyte2[4];
+			gifimage.k = abyte2[5] & 0xff;
+			gifimage.l = abyte2[6];
+			gifimage.p = (byte0 >> 4 & 7) + 1;
+			gifimage.d = (byte0 & 7) + 1;
 			gifimage.e = 1 << gifimage.d;
-		}
-		g g1 = a(d1, gifimage);
-		for(int j = d1.read(); j == 44; j = d1.read())
-		{
-			byte abyte4[] = new byte[9];
-			d1.read(abyte4);
-			gf gifframe = new gf();
-			gifframe.b = abyte4[0] & 0xff | (abyte4[1] & 0xff) << 8;
-			gifframe.c = abyte4[2] & 0xff | (abyte4[3] & 0xff) << 8;
-			gifframe.width = abyte4[4] & 0xff | (abyte4[5] & 0xff) << 8;
-			gifframe.height = abyte4[6] & 0xff | (abyte4[7] & 0xff) << 8;
-			byte byte1 = abyte4[8];
-			gifframe.h = (byte1 & 0x40) != 0;
-			if ((byte1 & 0x80) != 0)
+			if ((byte0 & 0x80) != 0)
 			{
-				gifframe.f = true;
-				gifframe.g = (byte1 & 0x20) != 0;
-				gifframe.i = (byte1 & 7) + 1;
-				gifframe.j = 1 << gifframe.i;
-				byte abyte5[] = new byte[3 * gifframe.j];
-				if (d1.read(abyte5) != abyte5.length)
+				gifimage.c = true;
+				gifimage.j = (byte0 & 8) != 0;
+				byte abyte3[] = new byte[3 * gifimage.e];
+				if (d1.read(abyte3) != abyte3.length)
 					throw new IOException("Invalid input stream: more data is expected!");
-				gifframe.k = new byte[gifframe.j];
-				gifframe.m = new byte[gifframe.j];
-				gifframe.l = new byte[gifframe.j];
-				for(int i1 = 0; i1 < gifframe.j; i1++)
+				gifimage.f = new byte[gifimage.e];
+				gifimage.h = new byte[gifimage.e];
+				gifimage.g = new byte[gifimage.e];
+				for(int i = 0; i < gifimage.e; i++)
 				{
-					gifframe.k[i1] = abyte5[3 * i1];
-					gifframe.l[i1] = abyte5[3 * i1 + 1];
-					gifframe.m[i1] = abyte5[3 * i1 + 2];
-				}
-				if (g1 != null)
-				{
-					gifframe.q = g1.b;
-					gifframe.r = g1.c;
-					gifframe.p = g1.a;
-					gifframe.o = g1.e;
-					gifframe.s = g1.d;
-				}
-				else
-				{
-					gifframe.q = false;
-					gifframe.r = -1;
-					gifframe.p = false;
-					gifframe.o = 0;
-					gifframe.s = 0;
+					gifimage.f[i] = abyte3[3 * i];
+					gifimage.g[i] = abyte3[3 * i + 1];
+					gifimage.h[i] = abyte3[3 * i + 2];
 				}
 			}
 			else
 			{
-				gifframe.f = false;
-				gifframe.i = gifimage.d;
-				gifframe.j = 1 << gifframe.i;
-				if (gifimage.c)
-				{
-					gifframe.k = new byte[gifframe.j];
-					gifframe.m = new byte[gifframe.j];
-					gifframe.l = new byte[gifframe.j];
-					System.arraycopy(gifimage.f, 0, gifframe.k, 0, gifframe.j);
-					System.arraycopy(gifimage.g, 0, gifframe.l, 0, gifframe.j);
-					System.arraycopy(gifimage.h, 0, gifframe.m, 0, gifframe.j);
-				}
-				else
+				gifimage.c = false;
+				gifimage.j = false;
+				gifimage.k = -1;
+				gifimage.d = gifimage.p;
+				gifimage.e = 1 << gifimage.d;
+			}
+			g g1 = a(d1, gifimage);
+			for(int j = d1.read(); j == 44; j = d1.read())
+			{
+				byte abyte4[] = new byte[9];
+				d1.read(abyte4);
+				gf gifframe = new gf();
+				gifframe.b = abyte4[0] & 0xff | (abyte4[1] & 0xff) << 8;
+				gifframe.c = abyte4[2] & 0xff | (abyte4[3] & 0xff) << 8;
+				gifframe.width = abyte4[4] & 0xff | (abyte4[5] & 0xff) << 8;
+				gifframe.height = abyte4[6] & 0xff | (abyte4[7] & 0xff) << 8;
+				byte byte1 = abyte4[8];
+				gifframe.h = (byte1 & 0x40) != 0;
+				if ((byte1 & 0x80) != 0)
 				{
 					gifframe.f = true;
+					gifframe.g = (byte1 & 0x20) != 0;
+					gifframe.i = (byte1 & 7) + 1;
+					gifframe.j = 1 << gifframe.i;
+					byte abyte5[] = new byte[3 * gifframe.j];
+					if (d1.read(abyte5) != abyte5.length)
+						throw new IOException("Invalid input stream: more data is expected!");
 					gifframe.k = new byte[gifframe.j];
 					gifframe.m = new byte[gifframe.j];
 					gifframe.l = new byte[gifframe.j];
-					for(int k = 0; k < gifframe.j; k++)
+					for(int i1 = 0; i1 < gifframe.j; i1++)
 					{
-						byte byte2 = (byte)(int)((256D / (double)gifframe.j) * (double)k);
-						gifframe.k[k] = byte2;
-						gifframe.l[k] = byte2;
-						gifframe.m[k] = byte2;
+						gifframe.k[i1] = abyte5[3 * i1];
+						gifframe.l[i1] = abyte5[3 * i1 + 1];
+						gifframe.m[i1] = abyte5[3 * i1 + 2];
 					}
-				}
-				if (g1 != null)
-				{
-					gifframe.q = g1.b;
-					gifframe.r = g1.c;
-					gifframe.p = g1.a;
-					gifframe.o = g1.e;
-					gifframe.s = g1.d;
-				}
-				else
-				{
-					if (gifimage.c && gifimage.getLastFrame() != null)
+					if (g1 != null)
 					{
-						gifframe.q = gifimage.getLastFrame().q;
-						gifframe.r = gifimage.getLastFrame().r;
+						gifframe.q = g1.b;
+						gifframe.r = g1.c;
+						gifframe.p = g1.a;
+						gifframe.o = g1.e;
+						gifframe.s = g1.d;
 					}
 					else
 					{
 						gifframe.q = false;
 						gifframe.r = -1;
+						gifframe.p = false;
+						gifframe.o = 0;
+						gifframe.s = 0;
 					}
-					gifframe.p = false;
-					gifframe.o = 0;
-					gifframe.s = 0;
 				}
+				else
+				{
+					gifframe.f = false;
+					gifframe.i = gifimage.d;
+					gifframe.j = 1 << gifframe.i;
+					if (gifimage.c)
+					{
+						gifframe.k = new byte[gifframe.j];
+						gifframe.m = new byte[gifframe.j];
+						gifframe.l = new byte[gifframe.j];
+						System.arraycopy(gifimage.f, 0, gifframe.k, 0, gifframe.j);
+						System.arraycopy(gifimage.g, 0, gifframe.l, 0, gifframe.j);
+						System.arraycopy(gifimage.h, 0, gifframe.m, 0, gifframe.j);
+					}
+					else
+					{
+						gifframe.f = true;
+						gifframe.k = new byte[gifframe.j];
+						gifframe.m = new byte[gifframe.j];
+						gifframe.l = new byte[gifframe.j];
+						for(int k = 0; k < gifframe.j; k++)
+						{
+							byte byte2 = (byte)(int)((256D / (double)gifframe.j) * (double)k);
+							gifframe.k[k] = byte2;
+							gifframe.l[k] = byte2;
+							gifframe.m[k] = byte2;
+						}
+					}
+					if (g1 != null)
+					{
+						gifframe.q = g1.b;
+						gifframe.r = g1.c;
+						gifframe.p = g1.a;
+						gifframe.o = g1.e;
+						gifframe.s = g1.d;
+					}
+					else
+					{
+						if (gifimage.c && gifimage.getLastFrame() != null)
+						{
+							gifframe.q = gifimage.getLastFrame().q;
+							gifframe.r = gifimage.getLastFrame().r;
+						}
+						else
+						{
+							gifframe.q = false;
+							gifframe.r = -1;
+						}
+						gifframe.p = false;
+						gifframe.o = 0;
+						gifframe.s = 0;
+					}
+				}
+				int l = d1.read();
+				if (l < 0)
+					throw new IOException("Invalid input stream: more data is expected!");
+				gifframe.n = new byte[gifframe.width * gifframe.height];
+				f f1 = new f();
+				f1.a(d1, gifframe, l);
+				gifframe.x = true;
+				gifimage.addGifFrame(gifframe);
+				j = d1.read();
+				if (j > 0)
+					d1.a(new byte[]{(byte)j});
+				g1 = a(d1, gifimage);
 			}
-			int l = d1.read();
-			if (l < 0)
-				throw new IOException("Invalid input stream: more data is expected!");
-			gifframe.n = new byte[gifframe.width * gifframe.height];
-			f f1 = new f();
-			f1.a(d1, gifframe, l);
-			gifframe.x = true;
-			gifimage.addGifFrame(gifframe);
-			j = d1.read();
-			if (j > 0)
-				d1.a(new byte[]{(byte)j});
-			g1 = a(d1, gifimage);
+			return x(gifimage);
 		}
-		return x(gifimage);
+		finally
+		{
+			d1.close();
+		}
 	}
 
 	public static final byte[] bs(byte[] bs) throws IOException
