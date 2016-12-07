@@ -39,62 +39,6 @@ public abstract class E extends $ implements EVI
 		V().evMain(args);
 	}
 
-	public static void agentmain(String agentArgs)
-	{
-		System.out.println("agentmain: More difference dependence on JRE!");
-		premain(agentArgs, null);
-	}
-
-	public static void agentmain(String agentArgs, Instrumentation instrumentation)
-	{
-		System.out.println("agentmain: More difference dependence on JRE.");
-		premain(agentArgs, instrumentation);
-	}
-
-	public static void premain(String s, Instrumentation instrumentation)
-	{
-		// "不同的运行环境(JRE)下，执行结果差别会很大！";
-		System.out.println("premain: More difference dependence on JRE.");
-		try
-		{
-			if (instrumentation != null)
-			{
-				ClassFileTransformer classfiletransformer = new ClassFileTransformer()
-				{
-					public byte[] transform(ClassLoader loader, String className, Class classBeingRedefined,
-						ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException
-					{
-						try
-						{
-							//V.log("").info("loadding " + className);
-							System.out.println("loadding " + className);
-						}
-						catch(Exception exception)
-						{
-							System.out.println("loadding " + className + ", EV not ready.");
-						}
-						return classfileBuffer;
-					}
-				};
-				instrumentation.addTransformer(classfiletransformer);
-			}
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-		}
-		try
-		{
-			//V.log("").info("premain started.");
-			System.out.println("premain started.");
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-			System.out.println("premain started, EV not ready.");
-		}
-	}
-
 	public static synchronized E V()
 	{
 		return (E)$.V();
