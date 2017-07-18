@@ -1,0 +1,266 @@
+$ = { include : function(file, curfile) {
+	if (curfile) {
+		ScriptEngine.setCurrentFilename(curfile);
+	}
+	return ScriptEngine.exec(file);
+} };
+
+config = function(k, dv) {
+	return java.lang.System.getProperty(k, dv);
+}
+config.set = function(k, v) {
+	java.lang.System.setProperty(k, v);
+}
+
+function sleep(ms) {
+	try {
+		java.lang.Thread.sleep(ms);
+	} catch (e) {}
+}
+
+var jsdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+function now(dms) {
+	return "" + jsdf.format(new java.util.Date(java.lang.System.currentTimeMillis()+(dms?dms:0)));
+}
+
+function source(is, ie) {
+	return ScriptEngine.source(is, ie);
+}
+
+function js_source(is, ie) {
+	return ScriptEngine.js_source(is, ie);
+}
+
+function eval(s) {
+	return ScriptEngine.eval(s);
+}
+
+clone = function(obj, idkey, idvalue) {
+	var o;
+	if (obj === null) {
+		o = null;
+	} else if (obj instanceof Array) {
+		o = [];
+		for (var i = 0, len = obj.length; i < len; i++) {
+			o.push(clone(obj[i], idkey, idvalue));
+		}
+	} else if (obj instanceof Object) {
+		o = {};
+		for ( var j in obj) {
+			if (j == idkey) {
+				if (idvalue != undefined) {
+					o[idkey] = idvalue;
+				}
+			} else {
+				o[j] = clone(obj[j], idkey, idvalue);
+			}
+		}
+	} else {
+		o = obj;
+	}
+	return o;
+};
+
+var user = ""; // default user
+var ip = "";
+
+default_log_set = { INFO : 1, DEBUG : 1, DETAIL : 1, WARNING : 1, ERROR : 1 };
+log_set_stack = [ default_log_set ];
+log_fmt = function(type, info) {
+	return now() + " " + type + " - ["
+			+ java.lang.Thread.currentThread().getName() + "]"
+			+ (user ? (user + " ") : "") 
+			+ (ip ? (ip + " ") : "")
+			+ info;
+
+};
+printlog = function(type, s) {
+	s = log_fmt(type, s);
+	if (log.set[type]) {
+		java.lang.System.out.println(s);
+		java.lang.System.out.flush();
+	}
+	return s;
+}
+
+log = function(s) {
+	return printlog("INFO", s);
+}
+log.set = clone(default_log_set);
+log.debug = function(s) {
+	return printlog("DEBUG", s);
+};
+log.detail = function(s) {
+	return printlog("DETAIL", s);
+};
+log.warning = function(s) {
+	return printlog("WARNING", s);
+};
+log.error = function(s) {
+	return printlog("ERROR", s);
+};
+
+function detail(o, n, s_intend) {
+	if (!n) {
+		n = "";
+	}
+	if (!s_intend) {
+		s_intend = "";
+	}
+	if (typeof (o) == "function") {
+		var s = ("" + o).replace(/[^\{]*\{\/\*\s*/mi, "").replace(
+				/\s*\*\/\}\s*/mi, "").replace(/\n/mg, "\n" + s_intend);
+		println(s_intend + s);
+	} else if (n == "class" && typeof (o) == "object"
+			&& ("" + o).match(/class /)) {
+		println(s_intend + o);
+	} else {
+		println(s_intend + typeof (o) + " " + o.constructor.name + " " + n
+				+ " = " + o + "");
+		if (o && s_intend.length <= 6) {
+			try {
+				for ( var x in o) {
+					detail(o[x], x, s_intend + "  ");
+				}
+			} catch (e) {}
+		}
+	}
+}
+
+function build_index(a, k) {
+	var o = {};
+	for ( var n in a) {
+		o[a[n][k]] = a[n];
+	}
+	return o;
+};
+
+function o2s(o) {
+	return ev.toJSONString(o2j(o));
+}
+
+function s2o(s) {
+	return ScriptEngine.eval(s);
+}
+
+function o2j(o) {
+	if (o == null) {
+		return null;
+	}
+	if (o instanceof Array) {
+		var a = new java.util.ArrayList();
+		for ( var x in o) {
+			a.add(o2j(o[x]));
+		}
+		return a;
+	} else if (typeof (o) == "object") {
+		if (o["class"] && o["class"]["class"]
+				&& o["class"]["class"]["name"] == "java.lang.Class") {
+			return o;
+		}
+		var m = new java.util.TreeMap();
+		for ( var x in o) {
+			m.put(x, o2j(o[x]));
+		}
+		return m;
+	}
+	return o;
+}
+
+function j2o(o) {
+	if (o == null) {
+		return null;
+	}
+	if (o.getClass().isPrimitive()) {
+		return o;
+	}
+	if (o instanceof java.lang.String) {
+		return "" + o;
+	}
+	if (o.getClass().isArray()) {
+		var a = [];
+		for (var x = 0; x < o.length; x++) {
+			a.push(j2o(o[x]));
+		}
+		return a;
+	}
+	if (o instanceof java.lang.Iterable) {
+		var its = o.iterator();
+		var a = [];
+		for (; its.hasNext();) {
+			a.push(j2o(its.next()));
+		}
+		return a;
+	}
+	if (o instanceof java.util.Map) {
+		var m = {};
+		var ks = o.keySet().iterator();
+		for (; ks.hasNext();) {
+			var x = "" + j2o(ks.next());
+			m[x] = j2o(o.get(x));
+		}
+		return m;
+	}
+	return o;
+}
+
+runsql = function(vars) {
+	var n = 1;
+	var v;
+	var vs = [];
+	var vf = [];
+	for (var i = 0; i < vars.length; i++) {
+		v = vars[i];
+		if (v instanceof Function) {
+			v = v();
+			vf.push(true);
+		} else {
+			vf.push(false);
+		}
+		if (v instanceof Array) {
+			while (n % v.length != 0) {
+				n += n;
+			}
+			vs.push(v);
+		} else {
+			vs.push([ v ]);
+		}
+	}
+	for (var a = 0; a < n; a++) {
+		var quote = "";
+		var instr = "";
+		var s = "";
+		for (var i = 0; i < vs.length; i++) {
+			v = "" + vs[i][a % vs[i].length];
+			if (vf[i]) {
+				if (instr.length > 0) {
+					v = v.replace(instr, instr + instr);
+				}
+				s += v;
+				quote = "";
+			} else {
+				if (instr.length == 0 && v[0] == v[v.length - 1]
+						&& (v[0] == "'" || v[0] == '"')) {
+					s += v.substring(0, v.length - 1);
+					instr = v[0];
+					quote = instr;
+				} else if (instr.length > 0
+						&& (v[0] == instr && v[v.length - 1] == instr)) {
+					s += quote + quote + v.substring(1, v.length - 1);
+					quote = instr;
+				} else if (instr.length > 0 && v[0] != instr) {
+					s += instr + v;
+					instr = "";
+					quote = instr;
+				} else {
+					s += v;
+					quote = "";
+				}
+			}
+		}
+		log(s)
+		v = SQLRunner.runsql(s);
+	}
+	return v;
+};
