@@ -12,6 +12,11 @@ public class i extends b.i
 	{
 	}
 
+	public void a()
+	{
+		
+	}
+
 	/**
 	 * 获取指定Class cls的package或其所在jar的所在路径，
 	 * 结尾没有“/”

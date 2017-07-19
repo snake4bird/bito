@@ -3,6 +3,7 @@ package bito.net._;
 import java.io.*;
 import java.net.*;
 import javax.net.ssl.*;
+
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +33,7 @@ import java.util.Map.Entry;
  * add field that default read stream timeout 2013-2-21 <br>
  * hide implements in deva 2014-7-17 <br>
  * add debug output control 2016-8-10 <br>
+ * https trust any certificate 2017-6-7 <br>
  * 
  * @author bird
  */
@@ -282,6 +284,10 @@ public class URLReader extends bito.net.URLReader
 					rmethod = "POST";
 				}
 				ab_huc.setRequestMethod(rmethod);
+				if (dbgout != null && debug_setting.contains("RequestHeader"))
+				{
+					dbgout.println("request:\r\n" + ab_huc.getRequestProperties());
+				}
 				ab_huc.setDoOutput(true);
 				os = ab_huc.getOutputStream();
 				os.write(post);
@@ -300,16 +306,16 @@ public class URLReader extends bito.net.URLReader
 					rmethod = "GET";
 				}
 				ab_huc.setRequestMethod(rmethod);
+				if (dbgout != null && debug_setting.contains("RequestHeader"))
+				{
+					dbgout.println("request:\r\n" + ab_huc.getRequestProperties());
+				}
 			}
 			// read
 			if (dbgout != null && debug_setting.contains("Process"))
 			{
 				dbgout.println(
 					(System.currentTimeMillis() - ab_dbgtime) + "ms  --  Request ready for " + rmethod + " " + url);
-			}
-			if (dbgout != null && debug_setting.contains("RequestHeader"))
-			{
-				dbgout.println("request:\r\n" + ab_huc.getRequestProperties());
 			}
 			if (cancel)
 			{
@@ -481,7 +487,7 @@ public class URLReader extends bito.net.URLReader
 		{
 			port = 443;
 		}
-		SSLSocketFactory simpleSSLSocketFactory = SSLSF.getSSLSocketFactory(tempfile_prefix, url.getHost(), port);
+		SSLSocketFactory simpleSSLSocketFactory = SSLSF.getSSLSocketFactory(this.tempfile_prefix, url.getHost(), port);
 		huc.setSSLSocketFactory(simpleSSLSocketFactory);
 		huc.setHostnameVerifier(new HostnameVerifier()
 		{
@@ -565,25 +571,27 @@ public class URLReader extends bito.net.URLReader
 		return classpath;
 	}
 
-	private byte[] readStream(InputStream is, long size, int timeout) throws Exception
+	private byte[] readStream(InputStream ais, long size, int timeout) throws Exception
 	{
 		if (timeout <= 0)
 		{
 			timeout = DefaultReadStreamTimeout;
 		}
+		BufferedInputStream bis = new BufferedInputStream(ais);
 		byte[] ret = new byte[0];
-		int xn = 0;
+		int xn = size > 0?(int)size:0;
 		long t = System.currentTimeMillis();
 		while(t > 0)
 		{
-			while((xn = is.available()) > 0 || size < 0)
+			//is.available() maybe return 0 always
+			//while((xn = is.available()) > 0 || size < 0)
 			{
 				if (xn <= 0 && size < 0)
 				{
 					xn = 1024;
 				}
 				byte[] b = new byte[xn];
-				int i = is.read(b);
+				int i = bis.read(b);
 				if (i < 0)
 				{
 					break;
@@ -671,26 +679,26 @@ public class URLReader extends bito.net.URLReader
 		try
 		{
 			URLReader r = new URLReader();
-			byte[] bs = r.readStream(System.in, -1, -1);
+			byte[] bs = null;//r.readStream(System.in, -1, -1);
 			String url = args[0];
 			if (args.length > 1 && "/D".equals(args[1]))
 			{
 				r.dbgout = System.out;
-				System.out.println("ISO-8859-1:" + new String(bs, "ISO-8859-1"));
-				System.out.println("UTF-8:" + new String(bs, "UTF-8"));
-				System.out.println("GBK:" + new String(bs, "GBK"));
+			//	System.out.println("ISO-8859-1:" + new String(bs, "ISO-8859-1"));
+			//	System.out.println("UTF-8:" + new String(bs, "UTF-8"));
+			//	System.out.println("GBK:" + new String(bs, "GBK"));
 			}
 			bs = r.ReadURL(url,
-				null,
-				null,
-				"proxy.stats.gov.cn",
-				"9010",
+				System.getProperty("username"),
+				System.getProperty("password"),
+				null,//"proxy.stats.gov.cn",
+				null,//"9010",
 				null,
 				null,
 				bs == null || bs.length == 0?null:bs,
 				null,
-				0,
-				100,
+				-1,//0,
+				-1,//100,
 				-1);
 			System.out.println(new String(bs));
 		}
@@ -707,9 +715,22 @@ public class URLReader extends bito.net.URLReader
 		private static final char[] passphrase = "changeit".toCharArray();
 
 		//
+		public static SSLSocketFactory getSSLSocketFactory(String host, int port) throws Exception
+		{
+			TrustAllTM savingTrustManager = new TrustAllTM();
+			SSLContext context = SSLContext.getInstance("SSLv3");
+			context.init(null, new TrustManager[]{savingTrustManager}, null);
+			return context.getSocketFactory();
+		}
+
 		public static SSLSocketFactory getSSLSocketFactory(String tempfile_prefix, String host, int port)
 			throws Exception
 		{
+			SSLSocketFactory factory = getSSLSocketFactory(host, port);
+			if (check_keystore(factory, host, port))
+			{
+				return factory;
+			}
 			//取得文件名
 			File f = new File(tempfile_prefix + "jssecacerts");
 			String HTTPS_KEYSTORE_FILE = f.getAbsolutePath();
@@ -723,7 +744,7 @@ public class URLReader extends bito.net.URLReader
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 			tmf.init(ks);
 			X509TrustManager defaultTrustManager = (X509TrustManager)tmf.getTrustManagers()[0];
-			STM savingTrustManager = new STM(defaultTrustManager);
+			SavingTM savingTrustManager = new SavingTM(defaultTrustManager);
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, new TrustManager[]{savingTrustManager}, null);
 			SSLSocketFactory factory = context.getSocketFactory();
@@ -828,12 +849,12 @@ public class URLReader extends bito.net.URLReader
 			return ks;
 		}
 
-		private static class STM implements X509TrustManager
+		private static class SavingTM implements X509TrustManager
 		{
 			private final X509TrustManager tm;
 			private X509Certificate[] chain;
 
-			STM(X509TrustManager tm)
+			SavingTM(X509TrustManager tm)
 			{
 				this.tm = tm;
 			}
@@ -854,54 +875,36 @@ public class URLReader extends bito.net.URLReader
 				tm.checkServerTrusted(chain, authType);
 			}
 		}
-		/**
-		private static final String _;
-		static
+
+		private static class TrustAllTM implements javax.net.ssl.TrustManager, javax.net.ssl.X509TrustManager
 		{
-			try
+			public java.security.cert.X509Certificate[] getAcceptedIssuers()
 			{
-				_ = Class.forName("_", true, new ClassLoader()
-				{
-					protected synchronized Class loadClass(String name,
-						boolean resolve) throws ClassNotFoundException
-					{
-						Class c;
-						if (name.equals("_"))
-						{
-							try
-							{
-								byte[] cbs = new byte[]{};
-								byte[] bs = new byte[0];
-								Inflater inflater = new Inflater();
-								inflater.setInput(cbs);
-								inflater.inflate(bs);
-								inflater.end();
-								c = defineClass(null, bs, 0, bs.length);
-							}
-							catch(Throwable e)
-							{
-								throw new ClassNotFoundException(e.getMessage());
-							}
-						}
-						else
-						{
-							c = super.loadClass(name);
-						}
-						if (resolve)
-						{
-							resolveClass(c);
-						}
-						return c;
-					}
-				}).newInstance().toString();
+				return null;
 			}
-			catch(Exception e)
+
+			public boolean isServerTrusted(java.security.cert.X509Certificate[] certs)
 			{
-				throw new RuntimeException(e);
+				return true;
+			}
+
+			public boolean isClientTrusted(java.security.cert.X509Certificate[] certs)
+			{
+				return true;
+			}
+
+			public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType)
+				throws java.security.cert.CertificateException
+			{
+				return;
+			}
+
+			public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType)
+				throws java.security.cert.CertificateException
+			{
+				return;
 			}
 		}
-		 * @throws Exception 
-		*/
 	}
 
 	public void setRequestProperty(String key, String value)

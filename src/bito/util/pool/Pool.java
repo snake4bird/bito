@@ -152,8 +152,7 @@ public class Pool
 				new Class[]{PooledObjectSpy.class, poolableClass},
 				al.toArray(new Method[0]));
 			PooledObjectSpy pooled_obj_spy = new PooledObjectSpy(this, pure_obj);
-			Poolable pooled_obj = (Poolable)proxyClass
-				.getConstructor(new Class[]{PooledObjectSpy.class, poolableClass})
+			Poolable pooled_obj = (Poolable)proxyClass.getConstructor(new Class[]{PooledObjectSpy.class, poolableClass})
 				.newInstance(pooled_obj_spy, pure_obj);
 			pooled_obj_spy.setPooledObject(pooled_obj);
 			objectsCount++;
@@ -171,14 +170,15 @@ public class Pool
 			}
 			log("new " + poolableObject() + " instance failed : " + e.getMessage());
 			failedcount++;
-			Poolable pooled_obj = holdObject();
+			Poolable pooled_obj = holdObject(keepIdleTime);
 			failedcount--;
 			return pooled_obj;
 		}
 	}
 
-	public synchronized Poolable holdObject() throws Exception
+	public synchronized Poolable holdObject(long keepIdleTime) throws Exception
 	{
+		this.keepIdleTime = keepIdleTime;
 		long t = 0;
 		int n = 0;
 		while((failedcount > 0 || (maxObjectsCount > 0 && objectsCount >= maxObjectsCount)) && freeObjects.size() == 0)
@@ -218,7 +218,6 @@ public class Pool
 	{
 		if (poolpo.reusable() && (maxHoldCount <= 0 || freeObjects.size() < maxHoldCount))
 		{
-			purepo.free();
 			freeObjects.put(poolpo, purepo);
 			notifyAll();
 		}
@@ -230,7 +229,7 @@ public class Pool
 
 	public synchronized void cleanTimeoutFreeObjects()
 	{
-		if (System.currentTimeMillis() > allusedtime + keepIdleTime)
+		if (keepIdleTime >= 0 && System.currentTimeMillis() > allusedtime + keepIdleTime)
 		{
 			if (freeObjects.size() > 0)
 			{

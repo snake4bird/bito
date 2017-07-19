@@ -11,10 +11,18 @@ import java.util.zip.Inflater;
 
 public class $ extends ClassLoader
 {
-	ClassLoader cl = (ClassLoader)b.i.t.o();
+	ClassLoader cl;
 
 	public $()
 	{
+		try
+		{
+			cl = (ClassLoader)Class.forName("$.$").newInstance();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public Class loadClass(String n) throws ClassNotFoundException

@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="bin/lib/js.jar"/>
+	<classpathentry kind="lib" path="D:/Tomcat6.0.37/lib/servlet-api.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

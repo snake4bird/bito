@@ -18,25 +18,86 @@ public class FileAppender
 	private String output_encoding = null;
 	private long maxfilesize;
 	private int maxbackindex;
+	private int maxkeepdays;
 
 	public FileAppender(String filename, long maxfilesize, int maxbackindex)
 	{
-		this(filename, maxfilesize, maxbackindex, null);
+		this(filename, maxfilesize, maxbackindex, -1, null);
 	}
 
-	public FileAppender(String filename, long maxfilesize, int maxbackindex, String output_encoding)
+	public FileAppender(String filename, long maxfilesize, int maxbackindex, int maxkeepdays, String output_encoding)
 	{
 		this.originalFilename = filename;
 		this.filenameContainsVariable = originalFilename.indexOf("[") >= 0 && originalFilename.indexOf("]") > 0;
 		this.maxfilesize = maxfilesize;
 		this.maxbackindex = maxbackindex;
+		this.maxkeepdays = maxkeepdays;
 		this.output_encoding = output_encoding;
+		if (maxkeepdays > 0)
+		{
+			new Thread("clear old files")
+			{
+				public void start()
+				{
+					this.setDaemon(true);
+					super.start();
+				}
+
+				public void run()
+				{
+					String fn = originalFilename.replaceAll(".*[\\/\\\\]", "").replaceAll("\\.", "\\\\.")
+						.replaceAll("\\[[^\\]]*\\]", "\\\\d+");
+					{
+						int lastdot = fn.lastIndexOf("\\.");
+						if (lastdot < 0)
+						{
+							lastdot = fn.length();
+						}
+						String fname = fn.substring(0, lastdot);
+						String fnext = fn.substring(lastdot);
+						fn = fname + "(?:\\.\\d+)?" + fnext;
+					}
+					while(true)
+					{
+						try
+						{
+							clearOldFiles(fn);
+							Thread.sleep(60000);
+						}
+						catch(Throwable e)
+						{
+						}
+					}
+				}
+			}.start();
+		}
 	}
 
 	protected void finalize() throws Throwable
 	{
 		closeAppender();
 		super.finalize();
+	}
+
+	private void clearOldFiles(String fn)
+	{
+		File dir = new File(originalFilename).getParentFile();
+		if (dir == null)
+		{
+			dir = new File(".");
+		}
+		File[] fs = dir.listFiles();
+		long t = System.currentTimeMillis() - this.maxkeepdays * 24 * 3600 * 1000;
+		if (fs != null)
+		{
+			for(File f : fs)
+			{
+				if (f.lastModified() < t && f.getName().matches(fn))
+				{
+					f.delete();
+				}
+			}
+		}
 	}
 
 	private void updateFile()
@@ -118,7 +179,10 @@ public class FileAppender
 		if (maxbackindex < 0 || idx <= maxbackindex)
 		{
 			File fnn = new File(fname + "." + idx + fnext);
-			renameExistFile(fnn, fname, idx + 1, fnext);
+			if (fnn.exists())
+			{
+				renameExistFile(fnn, fname, idx + 1, fnext);
+			}
 			currentfile.renameTo(fnn);
 		}
 		else

@@ -462,47 +462,6 @@ public class E
 		fos.close();
 	}
 
-	private void outputfile(String filename, long maxsize, int maxback, boolean stdout) throws IOException
-	{
-		String input_encoding = System.getProperty("input.encoding");
-		String output_encoding = System.getProperty("output.encoding");
-		FileAppender fa = null;
-		if (filename != null && filename.length() > 0)
-		{
-			fa = new FileAppender(filename, maxsize, maxback, output_encoding);
-		}
-		try
-		{
-			int c;
-			while((c = System.in.read()) != -1)
-			{
-				byte[] bs = new byte[System.in.available() + 1];
-				bs[0] = (byte)c;
-				System.in.read(bs, 1, bs.length - 1);
-				String s = input_encoding == null?new String(bs):new String(bs, input_encoding);
-				if (fa != null)
-				{
-					fa.appendfile(s, null);
-				}
-				if (stdout)
-				{
-					try
-					{
-						System.out.print(s);
-					}
-					catch(Throwable e)
-					{
-					}
-				}
-			}
-		}
-		catch(Throwable e)
-		{
-			fa.appendfile("Failure:", e);
-			fa.appendfile("Available charsets: " + Charset.availableCharsets().keySet().toString(), null);
-		}
-	}
-
 	private Map<String, Long> readfilestamp = new HashMap();
 	private Map<String, String> readfilecache = new HashMap();
 	private SortedMap<String, Long> readfilecachestamp = newMapSortedByAddTime();
@@ -586,7 +545,7 @@ public class E
 			}
 			else
 			{
-				s = new String(bs, "GBK");
+				s = new String(bs);
 			}
 		}
 		catch(UnsupportedEncodingException e)
@@ -719,6 +678,19 @@ public class E
 					break;
 				}
 			}
+		}
+	}
+
+	public void appendfile(File file, String content) throws IOException
+	{
+		OutputStream fos = new FileOutputStream(file, true);
+		try
+		{
+			fos.write(content.getBytes());
+		}
+		finally
+		{
+			fos.close();
 		}
 	}
 
@@ -889,12 +861,10 @@ public class E
 		return new URLReader();
 	}
 
-	public String[] match(String input, String regex)
+	private String[] find(Matcher m)
 	{
-		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(input);
 		ArrayList al = new ArrayList();
-		if (m.matches())
+		if (m.find())
 		{
 			for(int i = 1; i <= m.groupCount(); i++)
 			{
@@ -903,5 +873,24 @@ public class E
 			}
 		}
 		return (String[])al.toArray(new String[al.size()]);
+	}
+
+	public String[] find(String input, String regex)
+	{
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(input);
+		return find(m);
+	}
+
+	public String[] match(String input, String regex)
+	{
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(input);
+		if (m.matches())
+		{
+			m.reset();
+			find(m);
+		}
+		return new String[0];
 	}
 }

@@ -5,6 +5,29 @@ import java.util.Map;
 
 public class URLReader
 {
+	public static void main(String[] args)
+	{
+		if (args.length == 0)
+		{
+			System.out.println("Usage: URLReader http[s]://host[:port]/... [/D for debug]");
+			return;
+		}
+		URLReader ur = new URLReader();
+		try
+		{
+			if (args.length > 1 && "/D".equals(args[1]))
+			{
+				ur.setDebugOutput(System.out, null);
+			}
+			byte[] bs = ur.ReadURL(args[0], System.getProperty("username"), System.getProperty("password"), null);
+			System.out.println(new String(bs));
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	private URLReader ur = (URLReader)b.i.t.o();
 
 	public URLReader()
@@ -85,6 +108,26 @@ public class URLReader
 			rstart,
 			rend,
 			timeout);
+	}
+
+	public String ReadString(String url, String method, String user, String password, String proxyhost,
+		String proxyport, String proxyuser, String proxypswd, Map header, String post, String ref, long rstart,
+		long rend, int timeout) throws Exception
+	{
+		return new String(ur.ReadURL(url,
+			method,
+			user,
+			password,
+			proxyhost,
+			proxyport,
+			proxyuser,
+			proxypswd,
+			header,
+			post != null?post.getBytes():null,
+			ref,
+			rstart,
+			rend,
+			timeout));
 	}
 
 	public byte[] getDataBytes()

@@ -22,6 +22,8 @@ public class Main
 	{
 		try
 		{
+			System.setProperty("class.checksum", "ignore");
+			//
 			if (args.length >= 3 && args[0].equals("encrypt"))
 			{
 				encryptFile(args[1], args[2], (args.length >= 4)?args[3]:null, (args.length >= 5)?args[4]:null);
@@ -35,6 +37,7 @@ public class Main
 				outputfile((args.length > 1)?args[1]:"stdout.[yyyy][MM][dd].txt",
 					SystemConfig.getLong("maxfilesize", 2048000),
 					SystemConfig.getInt("maxbackindex", -1),
+					SystemConfig.getInt("maxkeepdays", -1),
 					SystemConfig.getBoolean("stdout", true));
 			}
 			else if (args.length >= 1 && args[0].equals("tail"))
@@ -91,8 +94,8 @@ public class Main
 				System.out
 					.println("[-Dusername=...] [-Dpassword=...] [-Dmode=debug] bito.Main wget <http[s]url> [postdata]");
 				System.out.println("[-Dusermail=...] [-Dpassword=...] bito.Main register");
-				System.out
-					.println("-Dmaxfilesize=2048000 -Dmaxbackindex=-1 bito.Main output <redirect stdout to filename>");
+				System.out.println(
+					"-Dmaxfilesize=2048000 -Dmaxbackindex=-1 -Dmaxkeepdays=-1 bito.Main output <redirect stdout to filename>");
 				System.out.println();
 				System.out.println(Arrays.toString(args));
 			}
@@ -164,14 +167,15 @@ public class Main
 		}
 	}
 
-	private static void outputfile(String filename, long maxsize, int maxback, boolean stdout) throws IOException
+	private static void outputfile(String filename, long maxsize, int maxback, int maxkeepdays, boolean stdout)
+		throws IOException
 	{
 		String input_encoding = System.getProperty("input.encoding");
 		String output_encoding = System.getProperty("output.encoding");
 		FileAppender fa = null;
 		if (filename != null && filename.length() > 0)
 		{
-			fa = new FileAppender(filename, maxsize, maxback, output_encoding);
+			fa = new FileAppender(filename, maxsize, maxback, maxkeepdays, output_encoding);
 		}
 		try
 		{

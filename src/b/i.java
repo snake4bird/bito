@@ -4,7 +4,7 @@ import java.util.HashSet;
 
 public class i extends $
 {
-	public static i t = (i)$.v();
+	public static i t = (i)$._();
 
 	protected i()
 	{
@@ -13,6 +13,16 @@ public class i extends $
 
 	private HashSet oset = new HashSet();
 	private int ocaller = 0;
+
+	public static void Main()
+	{
+		t.a();
+	}
+
+	public void a()
+	{
+		throw new RuntimeException("a bit of bito.");
+	}
 
 	public final Object o()
 	{

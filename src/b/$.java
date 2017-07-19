@@ -15,7 +15,7 @@ import java.util.zip.Inflater;
 
 public abstract class $
 {
-	private static final $ v;
+	private static final $ _;
 	private static final ClassLoader evcl;
 	private static final Method evcla;
 	private static final Method evclc;
@@ -28,10 +28,10 @@ public abstract class $
 		evcl = c();
 		evcla = a(evcl);
 		evclc = c(evcl);
-		v = v();
+		_ = _();
 	}
 
-	protected static synchronized $ v()
+	protected static synchronized $ _()
 	{
 		if (THIS == null)
 		{
@@ -55,12 +55,15 @@ public abstract class $
 		}
 		else
 		{
-			(($)THIS).checksum(new Throwable().getStackTrace()[1].getClass());
+			(($)THIS).c(new Throwable().getStackTrace()[1].getClass());
 		}
 		return THIS;
 	}
 
-	private void checksum(Class cls)
+	/**
+	 * checksum
+	 */
+	private void c(Class cls)
 	{
 		try
 		{
@@ -186,7 +189,7 @@ public abstract class $
 		{
 			try
 			{
-				return (ClassLoader)Class.forName("$.$").newInstance();
+				return (ClassLoader)Class.forName("$").newInstance();
 			}
 			catch(Throwable throwable)
 			{

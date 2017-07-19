@@ -426,23 +426,22 @@ class ProxyClassGenerator
 			short word2 = (short)methodinfo.code.size();
 			short word0;
 			word0 = (short)methodinfo.code.size();
-			methodinfo.exceptionTable.add(new ExceptionTableEntry(word1, word2, word0, cp
-				.getClass("java/lang/RuntimeException")));
+			methodinfo.exceptionTable
+				.add(new ExceptionTableEntry(word1, word2, word0, cp.getClass("java/lang/RuntimeException")));
 			code_astore(i, dataoutputstream);
 			code_aload(i, dataoutputstream);
 			dataoutputstream.writeByte(opc_athrow/*191*/);
 			word0 = (short)methodinfo.code.size();
-			methodinfo.exceptionTable.add(new ExceptionTableEntry(word1, word2, word0, cp
-				.getClass("java/lang/Exception")));
+			methodinfo.exceptionTable
+				.add(new ExceptionTableEntry(word1, word2, word0, cp.getClass("java/lang/Exception")));
 			code_astore(i, dataoutputstream);
 			dataoutputstream.writeByte(opc_new/*187*/);
 			dataoutputstream.writeShort(cp.getClass("java/lang/RuntimeException"));
 			dataoutputstream.writeByte(opc_dup/*89*/);
 			code_aload(i, dataoutputstream);
 			dataoutputstream.writeByte(opc_invokespecial/*183*/);
-			dataoutputstream.writeShort(cp.getMethodRef("java/lang/RuntimeException",
-				"<init>",
-				"(Ljava/lang/Throwable;)V"));
+			dataoutputstream
+				.writeShort(cp.getMethodRef("java/lang/RuntimeException", "<init>", "(Ljava/lang/Throwable;)V"));
 			dataoutputstream.writeByte(opc_athrow/*191*/);
 			if (methodinfo.code.size() > 65535)
 				throw new IllegalArgumentException("code size limit exceeded");
@@ -450,8 +449,8 @@ class ProxyClassGenerator
 			methodinfo.setMaxLocals(k + 1);
 			methodinfo.declaredExceptions = new short[exceptionTypes.length];
 			for(int i1 = 0; i1 < exceptionTypes.length; i1++)
-				methodinfo.declaredExceptions[i1] = cp.getClass(ProxyClassGenerator.dotToSlash(exceptionTypes[i1]
-					.getName()));
+				methodinfo.declaredExceptions[i1] = cp
+					.getClass(ProxyClassGenerator.dotToSlash(exceptionTypes[i1].getName()));
 			return methodinfo;
 		}
 
@@ -535,9 +534,8 @@ class ProxyClassGenerator
 				{
 					PrimitiveTypeInfo primitivetypeinfo = PrimitiveTypeInfo.get(parameterTypes[i]);
 					dataoutputstream.writeByte(opc_getstatic/*178*/);
-					dataoutputstream.writeShort(cp.getFieldRef(primitivetypeinfo.wrapperClassName,
-						"TYPE",
-						"Ljava/lang/Class;"));
+					dataoutputstream
+						.writeShort(cp.getFieldRef(primitivetypeinfo.wrapperClassName, "TYPE", "Ljava/lang/Class;"));
 				}
 				else
 				{
@@ -583,7 +581,9 @@ class ProxyClassGenerator
 	{
 		public ProxyClassLoader()
 		{
-			super();
+			super(ProxyClassLoader.class.getClassLoader() == null
+				?ClassLoader.getSystemClassLoader()
+					:ProxyClassLoader.class.getClassLoader());
 		}
 
 		protected Class<?> findClass(String className) throws ClassNotFoundException
@@ -1053,9 +1053,8 @@ class ProxyClassGenerator
 	{
 		code_ldc(cp.getString(class1.getName()), dataoutputstream);
 		dataoutputstream.writeByte(opc_invokestatic/*184*/);
-		dataoutputstream.writeShort(cp.getMethodRef("java/lang/Class",
-			"forName",
-			"(Ljava/lang/String;)Ljava/lang/Class;"));
+		dataoutputstream
+			.writeShort(cp.getMethodRef("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;"));
 	}
 
 	private static String getMethodDescriptor(Class parameterTypes[], Class returnType)
