@@ -1,5 +1,6 @@
 package bito.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,12 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -268,6 +271,59 @@ public class E
 	}
 
 	public static EscapeSequence es = new EscapeSequence();
+
+	public String cmd(String[] command)
+	{
+		int reti = 0;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try
+		{
+			{
+				Process p = Runtime.getRuntime().exec(command);
+				boolean isrunning = true;
+				while(isrunning)
+				{
+					try
+					{
+						InputStream is = p.getInputStream();
+						if (is.available() > 0)
+						{
+							byte[] bs = new byte[is.available()];
+							is.read(bs);
+							baos.write(bs);
+						}
+						InputStream es = p.getErrorStream();
+						if (es.available() > 0)
+						{
+							byte[] bs = new byte[es.available()];
+							es.read(bs);
+							baos.write(bs);
+						}
+						reti = p.exitValue();
+						baos.flush();
+						isrunning = false;
+					}
+					catch(IllegalThreadStateException itse)
+					{
+						try
+						{
+							Thread.sleep(1);
+						}
+						catch(InterruptedException e)
+						{
+						}
+					}
+				}
+				baos.write(("\r\nreturn " + reti + "\r\n").getBytes());
+			}
+		}
+		catch(Exception e)
+		{
+			reti = -1;
+			e.printStackTrace(new PrintStream(baos));
+		}
+		return baos.toString();
+	}
 
 	public int run(String[] command, String[] env, String workdir, OutputStream out, OutputStream err)
 	{
@@ -613,7 +669,7 @@ public class E
 	}
 
 	private Map<String, Long> writefilestamp = new HashMap();
-	private Map<String, String> writefilecache = new HashMap();
+	private Map<String, byte[]> writefilecache = new HashMap();
 	private SortedMap<String, Long> writefilecachestamp = newMapSortedByAddTime();
 
 	public void writefile(File file, String content) throws IOException
@@ -625,15 +681,13 @@ public class E
 			{
 				file.delete();
 			}
+			writefilestamp.remove(fn);
+			writefilecache.remove(fn);
+			writefilecachestamp.remove(fn);
 			return;
 		}
-		file = new File(fn);
-		if (!file.getParentFile().exists())
-		{
-			file.getParentFile().mkdirs();
-		}
 		Long fstamp;
-		String fcache;
+		byte[] fcache;
 		synchronized(writefilecachestamp)
 		{
 			fstamp = writefilestamp.get(fn);
@@ -643,18 +697,16 @@ public class E
 			&& fstamp != null
 				&& fstamp.longValue() == file.lastModified()
 				&& fcache != null
-				&& file.length() == fcache.length()
-				&& content.equals(fcache))
+				&& file.length() == fcache.length
+				&& Arrays.equals(content.getBytes(), fcache))
 		{
 			return;
 		}
-		FileOutputStream fos = new FileOutputStream(file);
-		fos.write(content.getBytes());
-		fos.close();
+		writeBytes(file, content.getBytes(), 0);
 		synchronized(writefilecachestamp)
 		{
 			writefilestamp.put(fn, file.lastModified());
-			writefilecache.put(fn, content);
+			writefilecache.put(fn, content.getBytes());
 			writefilecachestamp.remove(fn);
 			writefilecachestamp.put(fn, System.currentTimeMillis());
 			int count = writefilecachestamp.size();
@@ -678,6 +730,34 @@ public class E
 					break;
 				}
 			}
+		}
+	}
+
+	public void writeBytes(File file, byte[] content, long posfrom) throws IOException
+	{
+		if (content == null)
+		{
+			if (file.exists())
+			{
+				file.delete();
+			}
+		}
+		if (!file.getParentFile().exists())
+		{
+			file.getParentFile().mkdirs();
+		}
+		if (posfrom == 0)
+		{
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(content);
+			fos.close();
+		}
+		else
+		{
+			RandomAccessFile raf = new RandomAccessFile(file, "rws");
+			raf.seek(posfrom);
+			raf.write(content);
+			raf.close();
 		}
 	}
 

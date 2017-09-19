@@ -223,6 +223,7 @@ public class ASSRunner implements ProcThreadManager, ProcThreadMonitor
 	private void checkRunningTimeoutProcs()
 	{
 		long dprts = SystemConfig.getLong("data.proc.running.timeout.seconds", 30);
+		long dpkts = SystemConfig.getLong("data.proc.timeout.kill.seconds", 0);
 		synchronized(procthreads_running)
 		{
 			Iterator<Entry<ProcThread, Long>> pti = procthreads_starttime.entrySet().iterator();
@@ -231,15 +232,39 @@ public class ASSRunner implements ProcThreadManager, ProcThreadMonitor
 				Entry<ProcThread, Long> ptce = pti.next();
 				ProcThread pt = ptce.getKey();
 				long starttime = ptce.getValue();
-				long t = 1000L * SystemConfig.getLong(pt.getName() + ".running.timeout.seconds", dprts);
-				if (System.currentTimeMillis() > starttime + t
-					&& (!timeoutThreads.containsKey(pt) || timeoutThreads.get(pt) != starttime))
+				long rt = 1000L * SystemConfig.getLong(pt.getName() + ".running.timeout.seconds", dprts);
+				if (System.currentTimeMillis() > starttime + rt)
 				{
-					log.warn("thread '" + pt.getName() + "' running timeout.");
-					timeoutThreads.put(pt, starttime);
+					if (!timeoutThreads.containsKey(pt) || timeoutThreads.get(pt) != starttime)
+					{
+						log.warn("thread '" + pt.getName() + "' running timeout.");
+						timeoutThreads.put(pt, starttime);
+					}
+					else
+					{
+						long kt = 1000L * SystemConfig.getLong(pt.getName() + ".timeout.kill.seconds", dpkts);
+						if (kt > 0 && System.currentTimeMillis() > starttime + kt)
+						{
+							log.warn("thread '" + pt.getName() + "' timeout kill.");
+							pt.destroy(0);
+							synchronized(toCleanupThreads)
+							{
+								if (!toCleanupThreads.containsKey(pt))
+								{
+									toCleanupThreads.put(pt, 0L);
+								}
+							}
+						}
+					}
 				}
 			}
 		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void forceStopThread(Thread t)
+	{
+		t.stop();
 	}
 
 	private void checkCleanupProcThreads()
@@ -262,6 +287,9 @@ public class ASSRunner implements ProcThreadManager, ProcThreadMonitor
 					else if (System.currentTimeMillis() > ptce.getValue() + t)
 					{
 						log.warn("thread '" + pt.getName() + "' maybe deadlock.");
+						{
+							forceStopThread(pt);
+						}
 						pti.remove();
 						synchronized(deadLockThreads)
 						{

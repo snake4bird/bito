@@ -551,30 +551,4 @@ public class ASScriptPreprocess
 			sbout.append(cs[i_pos++]);
 		}
 	}
-
-	private void procPair()
-	{
-		if ("{".equals(apair.begin))
-		{
-		}
-		else if ("--@$$".equals(apair.begin))
-		{
-			//scan sql
-			List<String> nvars = new ArrayList();
-			while(!apair.match_end())
-			{
-				sbout.append("function _nestjs_1_(){" + "" + "};");
-				nvars.add("_nestjs_1_()");
-				sbout.append("var _nsqls_1_ = " + "" + ";");
-				nvars.add("_nsqls_1_");
-			}
-			sbout.append("runsql(");
-			for(String var : nvars)
-			{
-				sbout.append(var);
-				sbout.append("+");
-			}
-			sbout.append(");");
-		}
-	}
 }

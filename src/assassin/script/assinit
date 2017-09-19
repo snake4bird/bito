@@ -205,6 +205,8 @@ function j2o(o) {
 	return o;
 }
 
+// for run sql in ASS mark with --@$$
+// debug.ass.preprocess=true output processed source
 runsql = function(vars) {
 	var n = 1;
 	var v;
