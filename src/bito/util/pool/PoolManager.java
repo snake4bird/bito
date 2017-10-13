@@ -41,7 +41,8 @@ public class PoolManager
 				int maxobjectscount = SystemConfig.getInt("pool." + clsname + ".max.objects.count", 10);
 				int maxholdcount = SystemConfig.getInt("pool." + clsname + ".max.hold.count", 10);
 				long keepidletime = 1000L * SystemConfig.getLong("pool." + clsname + ".keep.idle.seconds", 900);
-				pool = new Pool(poolableClass, args, maxobjectscount, maxholdcount, keepidletime);
+				long reqtimeout = 1000L * SystemConfig.getLong("pool." + clsname + ".request.timeout.seconds", 900);
+				pool = new Pool(poolableClass, args, maxobjectscount, maxholdcount, keepidletime, reqtimeout);
 				pools.put(key, pool);
 			}
 			return pool;

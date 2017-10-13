@@ -286,7 +286,7 @@ public class ASSRunner implements ProcThreadManager, ProcThreadMonitor
 					}
 					else if (System.currentTimeMillis() > ptce.getValue() + t)
 					{
-						log.warn("thread '" + pt.getName() + "' maybe deadlock.");
+						log.warn("thread '" + pt.getName() + "' maybe deadlock, force stop it.");
 						{
 							forceStopThread(pt);
 						}

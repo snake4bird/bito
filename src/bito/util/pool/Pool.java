@@ -26,18 +26,21 @@ public class Pool
 	private int maxObjectsCount = 0;
 	private int maxHoldCount = 0;
 	private long keepIdleTime = 0;
+	private long requestTimeout = 0;
 	//
 	private int objectsCount = 0;
 	private int failedcount = 0;
 	private long allusedtime = 0;
 
-	public Pool(Class poolableClass, Object[] args, int maxObjectsCount, int maxHoldCount, long keepIdleTime)
+	public Pool(Class poolableClass, Object[] args, int maxObjectsCount, int maxHoldCount, long keepIdleTime,
+		long requestTimeout)
 	{
 		this.poolableClass = poolableClass;
 		this.args = args;
 		this.maxObjectsCount = maxObjectsCount;
 		this.maxHoldCount = maxHoldCount;
 		this.keepIdleTime = keepIdleTime;
+		this.requestTimeout = requestTimeout;
 	}
 
 	private void log(String s)
@@ -176,14 +179,14 @@ public class Pool
 		}
 	}
 
-	public synchronized Poolable holdObject(long keepIdleTime) throws Exception
+	public synchronized Poolable holdObject(long timeoutms) throws Exception
 	{
-		this.keepIdleTime = keepIdleTime;
-		long t = 0;
+		long tout = System.currentTimeMillis() + (timeoutms >= 0?timeoutms:requestTimeout);
+		long tlog = 0;
 		int n = 0;
 		while((failedcount > 0 || (maxObjectsCount > 0 && objectsCount >= maxObjectsCount)) && freeObjects.size() == 0)
 		{
-			if (t == 0 || System.currentTimeMillis() - t > 1000)
+			if (tlog == 0 || System.currentTimeMillis() - tlog > 1000)
 			{
 				log("wait for "
 					+ poolableObject()
@@ -191,10 +194,14 @@ public class Pool
 						+ (n > 0?(" " + n + "s"):"")
 						+ ", objects count="
 						+ objectsCount);
-				t = System.currentTimeMillis();
+				tlog = System.currentTimeMillis();
 				n++;
+				if (tlog >= tout)
+				{
+					throw new Exception("Pool object " + poolableClass + " request timeout.");
+				}
 			}
-			wait();
+			wait(100);
 		}
 		if (freeObjects.size() <= 1)
 		{
